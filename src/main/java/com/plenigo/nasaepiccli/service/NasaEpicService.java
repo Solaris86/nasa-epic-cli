@@ -1,11 +1,11 @@
 package com.plenigo.nasaepiccli.service;
 
-import com.plenigo.nasaepiccli.dto.Image;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 public interface NasaEpicService {
 
-    List<Image> fetchImageMetadata(String date, String color);
+    List<BufferedImage> fetchImages(String date, String color);
 
 }

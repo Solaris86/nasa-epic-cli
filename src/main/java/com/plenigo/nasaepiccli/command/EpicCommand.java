@@ -1,7 +1,6 @@
 package com.plenigo.nasaepiccli.command;
 
 import com.plenigo.nasaepiccli.constants.CommandConstants;
-import com.plenigo.nasaepiccli.dto.Image;
 import com.plenigo.nasaepiccli.service.NasaEpicService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -9,6 +8,7 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 @ShellComponent
@@ -23,7 +23,7 @@ public class EpicCommand {
                                   @ShellOption(value = {"-C", "--color"}, defaultValue = CommandConstants.IMAGE_COLOR_NATURAL, help = CommandConstants.SHELL_OPTION_FOLDER_COLOR_MESSAGE) String color,
                                   @ShellOption(value = {"-F", "--folder"}, help = CommandConstants.SHELL_OPTION_FOLDER_HELP_MESSAGE) String folderName) {
 
-        List<Image> images = nasaEpicService.fetchImageMetadata(date, color);
+        List<BufferedImage> images = nasaEpicService.fetchImages(date, color);
 
         return "Fetched " + images.size() + " images";
     }
