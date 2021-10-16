@@ -1,7 +1,9 @@
 package com.plenigo.nasaepiccli.service;
 
 import com.plenigo.nasaepiccli.dto.ImageMetadata;
+import com.plenigo.nasaepiccli.model.Image;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ public class NasaEpicServiceImpl implements NasaEpicService {
 
     private static final String EPIC_API_URL_DATE_SEPARATOR = "-";
     private static final String EPIC_ARCHIVE_URL_DATE_SEPARATOR = "/";
+    private static final String EPIC_API_RESPONSE_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @Value("${nasa.api.epic.url}")
     private String epicApiBaseUrl;
@@ -37,7 +40,7 @@ public class NasaEpicServiceImpl implements NasaEpicService {
     private final RestTemplate restTemplate;
 
     @Override
-    public List<BufferedImage> fetchImages(String date, String color) {
+    public List<Image> fetchImages(String date, String color) {
         ResponseEntity<ImageMetadata[]> responseEntity;
         try {
             responseEntity = restTemplate.getForEntity(createApiUrl(date, color), ImageMetadata[].class);
@@ -45,13 +48,25 @@ public class NasaEpicServiceImpl implements NasaEpicService {
             throw new RuntimeException(ex.getMessage(), ex.getCause());
         }
 
+        ImageMetadata[] fetchedImages = responseEntity.getBody();
+        if (ArrayUtils.isEmpty(fetchedImages)) {
+            throw new RuntimeException("No images were fetched for requested date");
+        }
+
         // TODO handle case when date is not present
+        if (StringUtils.isBlank(date)) {
+            date = fetchedImages[0].getDate().toLocalDate().toString();
+        }
         String baseArchiveUrl = createBaseArchiveUrl(date, color);
-        return Arrays.stream(responseEntity.getBody())
+        return Arrays.stream(fetchedImages)
                 .map(imageMetadata -> {
                     try {
-                        URL url = new URL(baseArchiveUrl + imageMetadata.getName() + ".png");
-                        return ImageIO.read(url);
+                        String archiveUrl = baseArchiveUrl + imageMetadata.getName() + ".png";
+                        BufferedImage bufferedImage = ImageIO.read(new URL(archiveUrl));
+                        return Image.builder()
+                                .metadata(imageMetadata)
+                                .image(bufferedImage)
+                                .build();
                     } catch (IOException e) {
                         throw new RuntimeException(e.getMessage(), e.getCause());
                     }
