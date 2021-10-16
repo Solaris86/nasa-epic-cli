@@ -1,12 +1,10 @@
 package com.plenigo.nasaepiccli.service;
 
 
-import com.plenigo.nasaepiccli.model.Image;
-
-import java.util.List;
+import com.plenigo.nasaepiccli.model.ImageList;
 
 public interface NasaEpicService {
 
-    List<Image> fetchImages(String date, String color);
+    ImageList fetchImages(String date, String color);
 
 }

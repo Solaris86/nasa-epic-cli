@@ -1,22 +1,20 @@
 package com.plenigo.nasaepiccli.model;
 
-import com.plenigo.nasaepiccli.dto.ImageMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.awt.image.BufferedImage;
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class Image {
+public class ImageList {
 
-    private ImageMetadata metadata;
-    private BufferedImage image;
+    private List<Image> images;
     private LocalDate capturedDate;
 
 }
