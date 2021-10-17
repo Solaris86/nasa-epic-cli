@@ -11,7 +11,7 @@ import java.time.format.DateTimeParseException;
 
 public class CapturedDateValidator implements ConstraintValidator<ValidCapturedDate, String> {
 
-    private Logger logger = LoggerFactory.getLogger(CapturedDateValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(CapturedDateValidator.class);
 
     @Override
     public void initialize(ValidCapturedDate constraintAnnotation) {

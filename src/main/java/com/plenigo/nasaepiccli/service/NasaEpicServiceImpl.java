@@ -12,7 +12,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -31,47 +30,37 @@ import java.util.stream.Collectors;
 public class NasaEpicServiceImpl implements NasaEpicService {
 
     private static final Logger logger = LoggerFactory.getLogger(NasaEpicServiceImpl.class);
-    private static final String EPIC_API_URL_DATE_SEPARATOR = "-";
-    private static final String EPIC_ARCHIVE_URL_DATE_SEPARATOR = "/";
 
-    @Value("${nasa.api.epic.url}")
-    private String epicApiBaseUrl;
-
-    @Value("${nasa.archive.epic.url}")
-    private String epicArchiveBaseUrl;
-
-    @Value("${nasa.api.key}")
-    private String apiKey;
-
+    private final NasaEpicApiUrlResolver apiUrlResolver;
+    private final NasaEpicArchiveUrlResolver archiveUrlResolver;
     private final RestTemplate restTemplate;
 
     @Override
-    public ImageResponseContext fetchImages(ImageRequestContext fetchContext) {
-        logger.debug("Fetching image metadata via NASA EPIC API using fetch context [{}]", fetchContext);
+    public ImageResponseContext fetchImages(ImageRequestContext imageRequestContext) {
+        logger.debug("Fetching image metadata via NASA EPIC API using fetch context [{}]", imageRequestContext);
 
         ImageMetadata[] fetchedImages;
         try {
-            fetchedImages = restTemplate.getForObject(createApiUrl(fetchContext), ImageMetadata[].class);
+            fetchedImages = restTemplate.getForObject(apiUrlResolver.resolveApiUrl(imageRequestContext), ImageMetadata[].class);
         } catch (RestClientException ex) {
             logger.error("An error occurred while communicating with NASA EPIC API", ex.getCause());
             throw new ThirdPartyApiException("An error occurred while communicating with NASA EPIC API", ex.getCause());
         }
 
         if (ArrayUtils.isEmpty(fetchedImages)) {
-            logger.error("No image metadata found for specified date [{}]", fetchContext.getDate());
-            throw new ThirdPartyApiEmptyResponseException(String.format("No image metadata found for specified date [%s]", fetchContext.getDate()));
+            logger.error("No image metadata found for specified date [{}]", imageRequestContext.getDate());
+            throw new ThirdPartyApiEmptyResponseException(String.format("No image metadata found for specified date [%s]", imageRequestContext.getDate()));
         }
 
-        if (StringUtils.isBlank(fetchContext.getDate())) {
-            fetchContext.setDate(fetchedImages[0].getDate().toLocalDate().toString());
+        if (StringUtils.isBlank(imageRequestContext.getDate())) {
+            imageRequestContext.setDate(fetchedImages[0].getDate().toLocalDate().toString());
         }
-        String baseArchiveUrl = createBaseArchiveUrl(fetchContext);
 
-        logger.debug("Downloading images form NASA EPIC archive for date [{}]", fetchContext.getDate());
+        logger.debug("Downloading images form NASA EPIC archive for date [{}]", imageRequestContext.getDate());
         List<Image> images = Arrays.stream(fetchedImages)
                 .map(imageMetadata -> {
                     try {
-                        String archiveUrl = baseArchiveUrl + imageMetadata.getName() + fetchContext.getImageType().getExtension();
+                        String archiveUrl = archiveUrlResolver.resolveArchiveUrl(imageRequestContext, imageMetadata.getName());
                         BufferedImage bufferedImage = ImageIO.read(new URL(archiveUrl));
                         return Image.builder()
                                 .metadata(imageMetadata)
@@ -87,38 +76,9 @@ public class NasaEpicServiceImpl implements NasaEpicService {
 
         return ImageResponseContext.builder()
                 .images(images)
-                .capturedDate(LocalDate.parse(fetchContext.getDate()))
-                .imageType(fetchContext.getImageType())
+                .capturedDate(LocalDate.parse(imageRequestContext.getDate()))
+                .imageType(imageRequestContext.getImageType())
                 .build();
     }
 
-    private String createApiUrl(ImageRequestContext fetchContext) {
-        StringBuilder apiUrl = new StringBuilder(epicApiBaseUrl);
-        apiUrl.append("/").append(fetchContext.getImageColor().getColor());
-
-        if (StringUtils.isNotBlank(fetchContext.getDate())) {
-            apiUrl.append("/date/");
-            appendDateToUrl(apiUrl, fetchContext.getDate(), EPIC_API_URL_DATE_SEPARATOR);
-        }
-
-        apiUrl.append("?api_key=").append(apiKey);
-
-        return apiUrl.toString();
-    }
-
-    private String createBaseArchiveUrl(ImageRequestContext fetchContext) {
-        StringBuilder archiveUrl = new StringBuilder(epicArchiveBaseUrl);
-        archiveUrl.append("/").append(fetchContext.getImageColor().getColor()).append("/");
-        appendDateToUrl(archiveUrl, fetchContext.getDate(), EPIC_ARCHIVE_URL_DATE_SEPARATOR);
-        archiveUrl.append("/").append(fetchContext.getImageType().getName()).append("/");
-
-        return archiveUrl.toString();
-    }
-
-    private void appendDateToUrl(StringBuilder baseUrl, String date, String separator) {
-        LocalDate imageDate = LocalDate.parse(date);
-        baseUrl.append(imageDate.getYear()).append(separator);
-        baseUrl.append(imageDate.getMonthValue()).append(separator);
-        baseUrl.append(imageDate.getDayOfMonth());
-    }
 }
