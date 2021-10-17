@@ -15,7 +15,8 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter:2.5.5'
 	implementation 'org.springframework.shell:spring-shell-starter:2.0.1.RELEASE'
-	implementation 'org.springframework.boot:spring-boot-starter-web:2.5.5'
+	implementation 'org.springframework:spring-web:5.3.10'
+	implementation 'org.springframework.boot:spring-boot-starter-json:2.5.5'
 	compileOnly 'org.projectlombok:lombok:1.18.22'
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
