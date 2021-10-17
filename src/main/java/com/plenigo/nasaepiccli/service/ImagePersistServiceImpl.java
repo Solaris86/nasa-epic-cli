@@ -1,5 +1,6 @@
 package com.plenigo.nasaepiccli.service;
 
+import com.plenigo.nasaepiccli.exception.FilePersistenceException;
 import com.plenigo.nasaepiccli.model.ImageResponseContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class ImagePersistServiceImpl implements ImagePersistService {
                 logger.debug("Folder successfully created, path [{}]", imagePath);
             } catch (IOException ex) {
                 logger.error("An error occurred while trying to create directory [{}]", imageLocation, ex);
-                throw new RuntimeException(ex.getMessage(), ex.getCause());
+                throw new FilePersistenceException(String.format("An error occurred while trying to create directory [%s]", imageLocation), ex.getCause());
             }
         } else {
             logger.debug("Skipping folder creation since it already exists, path [{}]", imageLocation);
@@ -41,7 +42,8 @@ public class ImagePersistServiceImpl implements ImagePersistService {
                 ImageIO.write(imageContext.getImage(), imageResponseContext.getImageType().getFormatName(), new File(pathName));
             } catch (IOException ex) {
                 logger.error("An error occurred while saving [{}] image to specified path", imageContext.getMetadata().getName(), ex);
-                throw new RuntimeException(ex.getMessage(), ex.getCause());
+                throw new FilePersistenceException(String.format("An error occurred while saving [%s] image to specified path",
+                        imageContext.getMetadata().getName()), ex.getCause());
             }
         });
 
