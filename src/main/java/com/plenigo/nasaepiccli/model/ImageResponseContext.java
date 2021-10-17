@@ -12,9 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
-public class ImageList {
+public class ImageResponseContext {
 
     private List<Image> images;
     private LocalDate capturedDate;
+    private ImageType imageType;
 
 }

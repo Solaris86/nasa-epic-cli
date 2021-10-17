@@ -1,10 +1,11 @@
 package com.plenigo.nasaepiccli.service;
 
 
-import com.plenigo.nasaepiccli.model.ImageList;
+import com.plenigo.nasaepiccli.model.ImageRequestContext;
+import com.plenigo.nasaepiccli.model.ImageResponseContext;
 
 public interface NasaEpicService {
 
-    ImageList fetchImages(String date, String color);
+    ImageResponseContext fetchImages(ImageRequestContext fetchContext);
 
 }

@@ -9,9 +9,13 @@ public class CommandConstants {
 
     public final String SHELL_OPTION_DATE_HELP_MESSAGE = "Date when the images were taken. If empty most recent date will be used, otherwise date must be in format yyyy-MM-dd e.g. 2021-10-12";
     public final String SHELL_OPTION_COLOR_MESSAGE = "Color of the images [natural|enhanced]. Default value is [natural]";
+    public final String SHELL_OPTION_TYPE_MESSAGE = "Type of the images [png|jpg|thumbs]. Default value is [jpg]";
     public final String SHELL_OPTION_PATH_HELP_MESSAGE = "Path on the hard drive where the images will be saved";
 
     public final String IMAGE_COLOR_NATURAL = "natural";
     public final String IMAGE_COLOR_ENHANCED = "enhanced";
 
+    public final String IMAGE_TYPE_NAME_PNG = "png";
+    public final String IMAGE_TYPE_NAME_JPG = "jpg";
+    public final String IMAGE_TYPE_NAME_THUMBS = "thumbs";
 }

@@ -1,9 +1,9 @@
 package com.plenigo.nasaepiccli.service;
 
-import com.plenigo.nasaepiccli.model.ImageList;
+import com.plenigo.nasaepiccli.model.ImageResponseContext;
 
 public interface ImagePersistService {
 
-    void persistImages(ImageList imageList, String basePath);
+    void persistImages(ImageResponseContext imageResponseContext, String basePath);
 
 }

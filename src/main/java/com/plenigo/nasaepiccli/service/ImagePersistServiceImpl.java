@@ -1,6 +1,6 @@
 package com.plenigo.nasaepiccli.service;
 
-import com.plenigo.nasaepiccli.model.ImageList;
+import com.plenigo.nasaepiccli.model.ImageResponseContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,8 @@ public class ImagePersistServiceImpl implements ImagePersistService {
     private static final Logger logger = LoggerFactory.getLogger(ImagePersistServiceImpl.class);
 
     @Override
-    public void persistImages(ImageList imageList, String basePath) {
-        String capturedDate = imageList.getCapturedDate().toString();
+    public void persistImages(ImageResponseContext imageResponseContext, String basePath) {
+        String capturedDate = imageResponseContext.getCapturedDate().toString();
         String imageLocation = basePath + "/" + capturedDate;
         Path imagePath = Path.of(imageLocation);
 
@@ -35,17 +35,17 @@ public class ImagePersistServiceImpl implements ImagePersistService {
             logger.debug("Skipping folder creation since it already exists, path [{}]", imageLocation);
         }
 
-        imageList.getImages().forEach(image -> {
+        imageResponseContext.getImages().forEach(imageContext -> {
             try {
-                String pathName = imageLocation + "/" + image.getMetadata().getName() + ".jpg";
-                ImageIO.write(image.getImage(), "jpg", new File(pathName));
+                String pathName = imageLocation + "/" + imageContext.getMetadata().getName() + imageResponseContext.getImageType().getExtension();
+                ImageIO.write(imageContext.getImage(), imageResponseContext.getImageType().getFormatName(), new File(pathName));
             } catch (IOException ex) {
-                logger.error("An error occurred while saving [{}] image to specified path", image.getMetadata().getName(), ex);
+                logger.error("An error occurred while saving [{}] image to specified path", imageContext.getMetadata().getName(), ex);
                 throw new RuntimeException(ex.getMessage(), ex.getCause());
             }
         });
 
-        logger.debug("[{}] images have been successfully saved to [{}]", imageList.getImages().size(), imageLocation);
+        logger.debug("[{}] images have been successfully saved to [{}]", imageResponseContext.getImages().size(), imageLocation);
     }
 
 }
