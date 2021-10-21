@@ -36,10 +36,14 @@ public class ImagePersistServiceImpl implements ImagePersistService {
             logger.debug("Skipping folder creation since it already exists, path [{}]", imageLocation);
         }
 
+        // TODO fix when false is returned
         imageResponseContext.getImages().forEach(imageContext -> {
             try {
                 String pathName = imageLocation + "/" + imageContext.getMetadata().getName() + imageResponseContext.getImageType().getExtension();
-                ImageIO.write(imageContext.getImage(), imageResponseContext.getImageType().getFormatName(), new File(pathName));
+                final boolean imageSaved = ImageIO.write(imageContext.getImage(), imageResponseContext.getImageType().getFormatName(), new File(pathName));
+                if (!imageSaved) {
+                    logger.debug("Image [{}] could not be saved.", imageContext.getMetadata().getName());
+                }
             } catch (IOException ex) {
                 logger.error("An error occurred while saving [{}] image to specified path", imageContext.getMetadata().getName(), ex);
                 throw new FilePersistenceException(String.format("An error occurred while saving [%s] image to specified path",
